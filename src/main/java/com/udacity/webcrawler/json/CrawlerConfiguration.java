@@ -328,9 +328,9 @@ public final class CrawlerConfiguration {
       }
 
       return new CrawlerConfiguration(
-          startPages.stream().collect(Collectors.toUnmodifiableList()),
-          ignoredUrls.stream().map(Pattern::compile).collect(Collectors.toUnmodifiableList()),
-          ignoredWords.stream().map(Pattern::compile).collect(Collectors.toUnmodifiableList()),
+          startPages.stream().toList(),
+          ignoredUrls.stream().map(Pattern::compile).toList(),
+          ignoredWords.stream().map(Pattern::compile).toList(),
           parallelism,
           implementationOverride,
           maxDepth,
