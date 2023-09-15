@@ -33,6 +33,7 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
             startTimer = clock.instant();
         }
 
+        // Copied code from Lesson Snippet
         try {
             returnProxy = method.invoke(callMethod, args);
         } catch (InvocationTargetException e) {

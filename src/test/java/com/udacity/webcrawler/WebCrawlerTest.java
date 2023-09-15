@@ -27,7 +27,7 @@ public final class WebCrawlerTest {
           + File.separator + "test"
           + File.separator + "data";
 
-  static Stream<Class<?>> provideTestParameters() throws Exception {
+  static Stream<Class<?>> provideTestParameters() {
     List<Class<?>> classes = new ArrayList<>();
     classes.add(SequentialWebCrawler.class);
     return classes.stream();

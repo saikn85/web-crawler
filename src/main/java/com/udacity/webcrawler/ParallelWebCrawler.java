@@ -9,11 +9,9 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * A concrete implementation of {@link WebCrawler} that runs multiple threads on a
@@ -96,6 +94,7 @@ final class ParallelWebCrawler implements WebCrawler {
             var now = clock.instant();
             final List<CrawlInternalAction> subLinks = new ArrayList<>();
 
+            // Code copied from Sequential Web Crawler
             for (Pattern pattern : ignoredUrls) {
                 if (pattern.matcher(url).matches()) {
                     return;
