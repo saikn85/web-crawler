@@ -1,8 +1,11 @@
 package com.udacity.webcrawler.profiler;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -11,20 +14,39 @@ import java.util.Objects;
  */
 final class ProfilingMethodInterceptor implements InvocationHandler {
 
-  private final Clock clock;
+    private final Clock clock;
+    private final Object callMethod;
+    private final ProfilingState state;
 
-  // TODO: You will need to add more instance fields and constructor arguments to this class.
-  ProfilingMethodInterceptor(Clock clock) {
-    this.clock = Objects.requireNonNull(clock);
-  }
+    ProfilingMethodInterceptor(Clock clock, Object callMethod, ProfilingState state) {
+        this.clock = Objects.requireNonNull(clock);
+        this.callMethod = callMethod;
+        this.state = state;
+    }
 
-  @Override
-  public Object invoke(Object proxy, Method method, Object[] args) {
-    // TODO: This method interceptor should inspect the called method to see if it is a profiled
-    //       method. For profiled methods, the interceptor should record the start time, then
-    //       invoke the method using the object that is being profiled. Finally, for profiled
-    //       methods, the interceptor should record how long the method call took, using the
-    //       ProfilingState methods.
-    return null;
-  }
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        Instant startTimer = null;
+        Object returnProxy;
+
+        boolean hasProfileAnnotation = method.getAnnotation(Profiled.class) != null;
+        if (hasProfileAnnotation) {
+            startTimer = clock.instant();
+        }
+
+        try {
+            returnProxy = method.invoke(callMethod, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (hasProfileAnnotation)
+                state.record(callMethod.getClass(),
+                        method,
+                        Duration.between(Objects.requireNonNull(startTimer), clock.instant()));
+        }
+
+        return returnProxy;
+    }
 }
