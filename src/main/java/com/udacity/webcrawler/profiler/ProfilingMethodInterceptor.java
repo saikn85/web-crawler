@@ -13,7 +13,6 @@ import java.util.Objects;
  * annotation. If they are, the method interceptor records how long the method invocation took.
  */
 final class ProfilingMethodInterceptor implements InvocationHandler {
-
     private final Clock clock;
     private final Object callMethod;
     private final ProfilingState state;

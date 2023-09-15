@@ -2,16 +2,22 @@ package com.udacity.webcrawler.parser;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.google.common.truth.Truth.assertThat;
 
 public final class PageParserImplTest {
 
-  private static final String DATA_DIR = System.getProperty("testDataDir");
+  private static final String DATA_DIR = System.getProperty("user.dir") +
+          File.separator + "src"
+          + File.separator + "test"
+          + File.separator + "data";
   private final String testPage = Paths.get(DATA_DIR, "test-page.html").toUri().toString();
 
   @Test

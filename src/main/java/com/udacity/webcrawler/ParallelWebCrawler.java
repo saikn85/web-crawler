@@ -8,9 +8,9 @@ import javax.inject.Inject;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -53,7 +53,7 @@ final class ParallelWebCrawler implements WebCrawler {
         ConcurrentSkipListSet<String> visitedUrls = new ConcurrentSkipListSet<>();
 
         for (String url : startingUrls) {
-            pool.submit(new CrawlInternalAction(url, backOff, maxDepth, counts, visitedUrls));
+            pool.invoke(new CrawlInternalAction(url, backOff, maxDepth, counts, visitedUrls));
         }
 
         if (counts.isEmpty()) {
@@ -74,7 +74,7 @@ final class ParallelWebCrawler implements WebCrawler {
         return Runtime.getRuntime().availableProcessors();
     }
 
-    private final class CrawlInternalAction extends RecursiveAction {
+    final class CrawlInternalAction extends RecursiveAction {
         private final String url;
         private final Instant deadline;
         private final int maxDepth;
@@ -93,35 +93,40 @@ final class ParallelWebCrawler implements WebCrawler {
 
         @Override
         protected void compute() {
-            if (maxDepth == 0 || clock.instant().isAfter(deadline)) {
-                return;
-            }
+            var now = clock.instant();
+            final List<CrawlInternalAction> subLinks = new ArrayList<>();
+
             for (Pattern pattern : ignoredUrls) {
                 if (pattern.matcher(url).matches()) {
                     return;
                 }
             }
+
+            if (maxDepth == 0 || now.isAfter(deadline)) {
+                return;
+            }
+
             if (!visitedUrls.add(url)) {
                 return;
             }
 
             PageParser.Result result = parserFactory.get(url).parse();
-            for (Map.Entry<String, Integer> e : result.getWordCounts().entrySet()) {
-                counts.compute(e.getKey(), (k, v) -> (v == null) ? e.getValue() : e.getValue() + v);
-            }
+            result.getWordCounts().entrySet().stream()
+                    .forEach(x -> {
+                        if (counts.containsKey(x.getKey()))
+                            counts.replace(x.getKey(), x.getValue());
+                        else
+                            counts.put(x.getKey(), x.getValue());
+                    });
 
-            Stream<String> links = result.getLinks().stream();
-            Collection<CrawlInternalAction> subtasks =
-                    links.map(link -> {
-                        return new CrawlInternalAction(
-                                link,
-                                deadline,
-                                maxDepth - 1,
-                                counts,
-                                visitedUrls);
-                    }).toList();
-
-            invokeAll(subtasks);
+            result.getLinks().stream()
+                    .map(link -> new CrawlInternalAction(
+                            link,
+                            deadline,
+                            maxDepth - 1,
+                            counts,
+                            visitedUrls)).forEach(subLinks::add);
+            invokeAll(subLinks);
         }
     }
 }
