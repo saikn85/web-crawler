@@ -28,6 +28,7 @@ final class ProfilingMethodInterceptor implements InvocationHandler {
         Instant startTimer = null;
         Object returnProxy;
 
+        // From Lesson on Reflection APIs
         boolean hasProfileAnnotation = method.getAnnotation(Profiled.class) != null;
         if (hasProfileAnnotation) {
             startTimer = clock.instant();

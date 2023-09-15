@@ -47,13 +47,17 @@ final class ParallelWebCrawler implements WebCrawler {
     @Override
     public CrawlResult crawl(List<String> startingUrls) {
         Instant backOff = clock.instant().plus(timeout);
+        // Referred - Java Doc
         ConcurrentMap<String, Integer> counts = new ConcurrentHashMap<>();
+        // Referred - Java Doc
         ConcurrentSkipListSet<String> visitedUrls = new ConcurrentSkipListSet<>();
 
+        // From Lesson on ForkJoinTask
         for (String url : startingUrls) {
             pool.invoke(new CrawlInternalAction(url, backOff, maxDepth, counts, visitedUrls));
         }
 
+        // General Logic flow
         if (counts.isEmpty()) {
             return new CrawlResult.Builder()
                     .setWordCounts(counts)

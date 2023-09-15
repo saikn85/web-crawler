@@ -39,7 +39,7 @@ final class ProfilerImpl implements Profiler {
         // See https://docs.oracle.com/javase/10/docs/api/java/lang/reflect/Proxy.html.
         // A bit dicey but let's attempt
         if (matched) {
-            // Copied from lesson snippets
+            // Copied from lesson snippets - Dynamic Proxy
             Object proxy = Proxy.newProxyInstance(
                     ProfilerImpl.class.getClassLoader(),
                     new Class[]{klass},

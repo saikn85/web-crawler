@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -30,8 +31,8 @@ public final class ConfigurationLoader {
    * @return the loaded {@link CrawlerConfiguration}.
    */
   public CrawlerConfiguration load() throws IOException {
-    try(Reader reader = Files.newBufferedReader(path)) {
-      return read(reader);
+    try(Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+      return ConfigurationLoader.read(reader);
     }
   }
 
@@ -51,6 +52,8 @@ public final class ConfigurationLoader {
       JsonParser.Feature.AUTO_CLOSE_SOURCE.
       This prevents the Jackson library from closing the input Reader,
       which we have already closed in ConfigurationLoader#load().
+
+      - Instruction from Udacity
      */
     objectMapper.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
     try {
