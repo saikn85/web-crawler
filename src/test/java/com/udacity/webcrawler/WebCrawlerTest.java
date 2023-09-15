@@ -8,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.inject.Inject;
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +21,14 @@ public final class WebCrawlerTest {
   @Inject
   private WebCrawler crawler;
 
-  private static final String DATA_DIR = System.getProperty("user.dir") +
-          File.separator + "src"
-          + File.separator + "test"
-          + File.separator + "data";
+  private static final String DATA_DIR = System.getProperty("testDataDir");
 
-  static Stream<Class<?>> provideTestParameters() {
+  static Stream<Class<?>> provideTestParameters() throws Exception {
+    String[] names = System.getProperty("crawlerImplementations").split("\\s+");
     List<Class<?>> classes = new ArrayList<>();
-    classes.add(SequentialWebCrawler.class);
+    for (String name : names) {
+      classes.add(Class.forName(name.strip()));
+    }
     return classes.stream();
   }
 

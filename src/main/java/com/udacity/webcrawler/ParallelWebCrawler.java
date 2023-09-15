@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
@@ -114,13 +115,11 @@ final class ParallelWebCrawler implements WebCrawler {
             }
 
             PageParser.Result result = parserFactory.get(url).parse();
-            result.getWordCounts().entrySet().stream()
-                    .forEach(x -> {
-                        if (counts.containsKey(x.getKey()))
-                            counts.replace(x.getKey(), x.getValue());
-                        else
-                            counts.put(x.getKey(), x.getValue());
-                    });
+            // https://stackoverflow.com/questions/54199820/how-to-set-append-options-and-standardcharsets-encoding-to-bufferedwriter-in-jav
+            // Made changes to address Atomicity
+            for (Map.Entry<String, Integer> x : result.getWordCounts().entrySet()) {
+                counts.compute(x.getKey(), (k, v) -> v == null ? x.getValue() : x.getValue() + v);
+            }
 
             result.getLinks().stream()
                     .map(link -> new CrawlInternalAction(
